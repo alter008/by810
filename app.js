@@ -193,17 +193,20 @@
     }
   }
 
+  // 把解析区滚到视口顶部（直接设 scrollTop，最可靠）
+  function scrollToAns() {
+    var b = $('ansbox');
+    if (!b || !b.classList.contains('show')) return;
+    var delta = b.getBoundingClientRect().top - canvas.getBoundingClientRect().top - 8;
+    canvas.scrollTop = Math.max(0, canvas.scrollTop + delta);
+  }
+
   function toggleAns() {
     if (cur < 0) return;
     showAns = !showAns;
     save(LS_ANS, { on: showAns ? 1 : 0 });
     goToAllIndex(cur, true);
-    if (showAns) {
-      setTimeout(function () {
-        var b = $('ansbox');
-        if (b && b.classList.contains('show') && b.scrollIntoView) b.scrollIntoView({ block: 'start', behavior: 'smooth' });
-      }, 60);
-    }
+    if (showAns) setTimeout(scrollToAns, 50);
   }
 
   // 预取相邻题目图片，手机上翻题更顺
