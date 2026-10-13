@@ -1,7 +1,7 @@
 // 离线缓存：首次打开后断网也能刷题；"添加到主屏幕"后可全屏使用
 // 策略：数据/页面文件走「网络优先」（保证题库和解析更新能及时生效），
 //       图片等静态资源走「缓存优先」（省流量、离线可用）
-const CACHE = 'by810-v3';
+const CACHE = 'by810-v4';
 const SHELL = [
   './', 'index.html', 'style.css', 'app.js', 'data.js', 'pages.js',
   'manifest.webmanifest', 'icon-192.png', 'icon-512.png'
@@ -49,7 +49,8 @@ self.addEventListener('fetch', e => {
   e.respondWith(
     caches.match(req).then(hit => {
       if (hit) return hit;
-      return fetch(req).then(res => {
+      // 图片：刚从网络取时强制校验一次，避免浏览器 HTTP 缓存里的旧图被再次存进来
+      return fetch(req, { cache: 'no-cache' }).then(res => {
         if (res && res.status === 200 && (res.type === 'basic' || res.type === 'default')) {
           const copy = res.clone();
           caches.open(CACHE).then(c => c.put(req, copy)).catch(() => {});
