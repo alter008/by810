@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="810刷题">
+<meta name="theme-color" content="#2b6cf6">
+<meta name="description" content="北京邮电大学 810 控制工程基础历年真题刷题（2011–2026）">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>北邮810控制工程 · 刷题</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="loadwarn" style="display:none">
+  <b style="font-size:16px">⚠ 页面资源没有加载成功</b><br>
+  如果你是在压缩包里<b>直接双击 index.html</b> 打开的：Windows 只会解压这一个文件，
+  样式表、题库数据和图片都读不到，所以页面会是空白的。<br>
+  <b>解决办法（二选一）：</b><br>
+  1. 先把压缩包<b>完整解压</b>（右键压缩包 →「全部解压缩」），再打开解压后文件夹里的
+  <code>site/index.html</code>；<br>
+  2. 或者直接打开压缩包里的 <code>810刷题_单文件版.html</code>，那个文件不依赖其它文件。
+</div>
+
+<header class="topbar">
+  <button id="btnMenu" class="iconbtn only-mobile" aria-label="目录" title="目录">☰</button>
+  <div class="brand">
+    <span class="logo">810</span>
+    <div class="titles">
+      <h1>控制工程基础 · 刷题</h1>
+      <p class="sub">北京邮电大学 810 历年真题 <span id="statTotal"></span></p>
+    </div>
+  </div>
+  <div class="tools">
+    <button id="btnRandom" class="ghost">随机一题</button>
+    <button id="btnWrong" class="ghost">错题本<i id="wrongCount">0</i></button>
+    <button id="btnStar" class="ghost">收藏<i id="starCount">0</i></button>
+  </div>
+</header>
+
+<main class="layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="side-head">
+      <h2>选择年份</h2>
+      <button id="btnAll" class="mini">全部</button>
+    </div>
+    <div class="years" id="yearList"></div>
+    <div class="qlist-wrap">
+      <div class="side-head"><h2 id="qlistTitle">题目列表</h2></div>
+      <div class="qlist" id="qList"></div>
+    </div>
+  </aside>
+  <div class="backdrop" id="backdrop"></div>
+
+  <section class="viewer" id="viewer">
+    <div class="vhead">
+      <div class="vmeta">
+        <span class="badge" id="vYear" style="display:none">—</span>
+        <span class="badge light" id="vNo" style="display:none">—</span>
+        <span class="badge light" id="vScore" style="display:none">—</span>
+        <span class="badge light" id="vPage" style="display:none">—</span>
+      </div>
+      <div class="vactions">
+        <button id="btnMark" class="ghost small">标记已掌握</button>
+        <button id="btnAddWrong" class="ghost small">加入错题</button>
+        <button id="btnFav" class="ghost small">☆ 收藏</button>
+        <button id="btnZoom" class="ghost small">放大</button>
+        <button id="btnFull" class="ghost small">全屏看</button>
+        <button id="btnSrc" class="ghost small">看原卷</button>
+      </div>
+    </div>
+    <div class="canvas" id="canvas">
+      <div class="empty" id="empty">
+        <p>点左上角「☰ 目录」选一套卷子，或者点「随机一题」开始吧～</p>
+      </div>
+      <img id="qimg" alt="题目" />
+    </div>
+    <div class="vfoot">
+      <button id="btnPrev" class="nav">← 上一题</button>
+      <div class="progress"><div class="bar" id="bar"><i></i></div><span id="progText"></span></div>
+      <button id="btnNext" class="nav primary">下一题 →</button>
+    </div>
+  </section>
+</main>
+
+<div class="lightbox" id="lightbox">
+  <img id="lbimg" alt="题目大图">
+  <div id="lbpages"></div>
+</div>
+<script src="data.js"></script>
+<script src="pages.js"></script>
+<script src="app.js"></script>
+<!--LOADCHECK-->
+<script>
+(function () {
+  function bad() {
+    var w = document.getElementById('loadwarn');
+    if (w) w.style.display = 'block';
+  }
+  if (!window.DATA || !window.DATA.length) { bad(); return; }
+  var okCss = false;
+  try {
+    for (var i = 0; i < document.styleSheets.length; i++) {
+      var s = document.styleSheets[i];
+      if (s.href && s.href.indexOf('style.css') >= 0 && s.cssRules && s.cssRules.length) { okCss = true; break; }
+    }
+  } catch (e) { okCss = true; }
+  if (!okCss) bad();
+  var first = null;
+  window.DATA.some(function (p) { return (p.questions || []).some(function (q) { first = q.img; return true; }); });
+  if (first) {
+    var probe = new Image();
+    probe.onerror = bad;
+    probe.src = first;
+  }
+})();
+</script>
+<!--/LOADCHECK-->
+<!--SWREG-->
+<script>
+// 只在 http/https 下注册 Service Worker（file:// 不支持）；离线缓存，可添加到手机主屏
+(function () {
+  if (!('serviceWorker' in navigator)) return;
+  if (location.protocol !== 'http:' && location.protocol !== 'https:') return;
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('sw.js').catch(function () {});
+  });
+})();
+</script>
+<!--/SWREG-->
+</body>
+</html>
