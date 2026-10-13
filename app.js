@@ -1,12 +1,14 @@
 (function () {
   var DATA = window.DATA || [];
   var PAGES = window.PAGES || {};
-  var LS_STAR = 'yuki810.star', LS_WRONG = 'yuki810.wrong', LS_DONE = 'yuki810.done';
+  var LS_STAR = 'yuki810.star', LS_WRONG = 'yuki810.wrong', LS_DONE = 'yuki810.done', LS_ANS = 'yuki810.ans';
 
   function load(k) { try { return JSON.parse(localStorage.getItem(k) || '{}'); } catch (e) { return {}; } }
   function save(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
 
   var star = load(LS_STAR), wrong = load(LS_WRONG), done = load(LS_DONE);
+  var ansPref = load(LS_ANS);
+  var showAns = ansPref.on === undefined ? true : !!ansPref.on;   // 默认展开解析
 
   // 展平
   var all = [];
@@ -89,6 +91,7 @@
       var dot = star[o.q.id] ? 'dot fav' : (done[o.q.id] ? 'dot' : (wrong[o.q.id] ? 'dot bad' : ''));
       d.innerHTML = '<span class="no">' + esc((showYear ? o.year.slice(2) + '·' : '') + o.q.label) + '</span>' +
         '<span class="tx">' + esc(o.q.head || ('第 ' + (o.idx + 1) + ' 题')) + '</span>' +
+        (o.q.ans ? '<span class="ansdot" title="有解析">解</span>' : '') +
         (dot ? '<span class="' + dot + '"></span>' : '');
       d.onclick = function () { goToAllIndex(all.indexOf(o)); };
       qList.appendChild(d);
@@ -108,7 +111,7 @@
     lbimg.style.display = 'block';
   }
 
-  function goToAllIndex(i) {
+  function goToAllIndex(i, keepScroll) {
     if (i < 0 || i >= all.length) return;
     cur = i;
     var o = all[i], q = o.q;
@@ -132,15 +135,75 @@
     $('btnMark').classList.toggle('on', !!done[q.id]);
     $('btnAddWrong').textContent = wrong[q.id] ? '✓ 已在错题本' : '加入错题';
     $('btnAddWrong').classList.toggle('on', !!wrong[q.id]);
+    // 解析：有答案的年份才显示按钮
+    var hasAns = !!q.ans;
+    var ab = $('btnAns');
+    ab.style.display = hasAns ? '' : 'none';
+    ab.textContent = showAns ? '收起解析' : '看解析';
+    ab.classList.toggle('on', showAns);
+    renderAns(o, hasAns);
+    var bAns = $('vAns');
+    bAns.textContent = hasAns ? '有解析' : '暂无解析';
+    bAns.className = 'badge light ' + (hasAns ? 'ans' : 'noans');
+    bAns.style.display = '';
     var pct = ((o.idx + 1) / o.total) * 100;
     $('progText').textContent = (o.idx + 1) + '/' + o.total;
     var barEl = $('bar');
     if (barEl.firstChild) barEl.firstChild.style.width = pct + '%';
-    canvas.scrollTop = 0;
+    if (!keepScroll) canvas.scrollTop = 0;
     renderList();
     closeDrawer();
     preload(i);
     try { history.replaceState(null, '', '#' + q.id); } catch (e) {}
+  }
+
+  // ---- 解析区 ----
+
+  var ansYears = {};
+  DATA.forEach(function (p) {
+    (p.questions || []).forEach(function (q) { if (q.ans) ansYears[p.year] = 1; });
+  });
+
+  function renderAns(o, hasAns) {
+    var box = $('ansbox'), img = $('ansimg'), tip = $('ansTip');
+    box.classList.remove('missing');
+    if (!hasAns) {
+      if (!ansYears[o.year]) {           // 整年都没有解析：不显示解析区
+        box.classList.remove('show');
+        img.removeAttribute('src');
+        img.style.display = 'none';
+        return;
+      }
+      box.classList.add('missing');
+      box.classList.add('show');
+      tip.textContent = '本题解析缺失（该年份其余题目有解析）';
+      img.removeAttribute('src');
+      img.style.display = 'none';
+      return;
+    }
+    tip.textContent = o.year + ' 年 · 第 ' + o.q.label + ' 题';
+    if (showAns) {
+      img.style.display = 'block';
+      img.src = srcOf(o.q.ans);
+      img.alt = o.year + ' 年第 ' + o.q.label + ' 题 解析';
+      box.classList.add('show');
+    } else {
+      box.classList.remove('show');
+      img.removeAttribute('src');
+    }
+  }
+
+  function toggleAns() {
+    if (cur < 0) return;
+    showAns = !showAns;
+    save(LS_ANS, { on: showAns ? 1 : 0 });
+    goToAllIndex(cur, true);
+    if (showAns) {
+      setTimeout(function () {
+        var b = $('ansbox');
+        if (b && b.classList.contains('show') && b.scrollIntoView) b.scrollIntoView({ block: 'start', behavior: 'smooth' });
+      }, 60);
+    }
   }
 
   // 预取相邻题目图片，手机上翻题更顺
@@ -180,6 +243,7 @@
   $('btnWrong').onclick = function () { listOnly = 'wrong'; filterYear = null; renderYears(); renderList(); closeDrawer(); };
   $('btnStar').onclick = function () { listOnly = 'star'; filterYear = null; renderYears(); renderList(); closeDrawer(); };
   $('btnMenu').onclick = toggleDrawer;
+  $('btnAns').onclick = toggleAns;
   backdrop.onclick = closeDrawer;
   window.addEventListener('resize', function () { if (!isNarrow()) closeDrawer(); });
   $('btnFav').onclick = function () {
@@ -250,6 +314,7 @@
       else if (e.key === 'f' || e.key === 'F') $('btnFull').click();
       else if (e.key === 'o' || e.key === 'O') $('btnSrc').click();
       else if (e.key === 'm' || e.key === 'M') toggleDrawer();
+      else if (e.key === 'a' || e.key === 'A') toggleAns();
     } else if (e.key === 'Escape') {
       lightbox.classList.remove('on');
     }

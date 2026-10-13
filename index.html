@@ -63,8 +63,10 @@
         <span class="badge light" id="vNo" style="display:none">—</span>
         <span class="badge light" id="vScore" style="display:none">—</span>
         <span class="badge light" id="vPage" style="display:none">—</span>
+        <span class="badge light" id="vAns" style="display:none">—</span>
       </div>
       <div class="vactions">
+        <button id="btnAns" class="ghost small">看解析</button>
         <button id="btnMark" class="ghost small">标记已掌握</button>
         <button id="btnAddWrong" class="ghost small">加入错题</button>
         <button id="btnFav" class="ghost small">☆ 收藏</button>
@@ -78,6 +80,13 @@
         <p>点左上角「☰ 目录」选一套卷子，或者点「随机一题」开始吧～</p>
       </div>
       <img id="qimg" alt="题目" />
+      <div class="ansbox" id="ansbox" style="display:none">
+        <div class="anshead">
+          <span class="anstitle">参考答案与解析</span>
+          <span class="anstip" id="ansTip"></span>
+        </div>
+        <img id="ansimg" alt="解析" />
+      </div>
     </div>
     <div class="vfoot">
       <button id="btnPrev" class="nav">← 上一题</button>

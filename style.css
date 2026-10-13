@@ -134,6 +134,32 @@ button{font-family:inherit;font-size:15px;cursor:pointer;border:none;background:
 .pgcap{color:#dfe4ef;font-size:14px;font-weight:600;padding:8px 2px;text-align:center}
 .pgwrap img{width:100%;display:block;border-radius:8px}
 
+/* ---------- 参考答案 ---------- */
+.ansbox{
+  display:none;width:100%;max-width:1000px;margin:14px auto 0;
+  background:var(--card);border:1px solid var(--line);border-radius:12px;
+  box-shadow:var(--shadow);overflow:hidden;
+}
+.ansbox.show{display:block}
+.anshead{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
+  padding:10px 14px;background:#eefaf1;border-bottom:1px solid #d6f0de;
+}
+.anstitle{font-weight:700;color:#0f7a3d;font-size:14px}
+.anstitle::before{content:'✔ '}
+.anstip{font-size:12px;color:var(--ink2)}
+#ansimg{display:block;width:100%;background:#fff}
+.ansbox.missing .anshead{background:#fff8e6;border-bottom-color:#f0e0b8}
+.ansbox.missing .anstitle{color:#8a5a00}
+.ansbox.missing .anstitle::before{content:'ⓘ '}
+#ansimg.zoomable{cursor:zoom-in}
+.item .ansdot{
+  font-size:10px;font-weight:700;color:#0f7a3d;background:#e6f7ec;
+  border-radius:4px;padding:1px 3px;flex:none;margin-top:5px;
+}
+.badge.ans{background:#e6f7ec;color:#0f7a3d}
+.badge.noans{background:#f2f3f6;color:#8b93a3}
+
 /* ---------- 资源加载失败提示 ---------- */
 #loadwarn{
   margin:16px;padding:16px 20px;border:2px solid var(--warn);background:#fff8e6;
